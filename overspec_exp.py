@@ -11,7 +11,7 @@ boxW, boxH = 436, 436
 
 def begin():
     
-    global canvas, xc, yc, imagePositions, boxPositions
+    global canvas, xc, yc, imagePositions, arrowPositions, boxPositions
     
     pygame.init()
     pygame.mixer.init(44100, -16, 2, 2048)
@@ -24,6 +24,7 @@ def begin():
     mousePos = [xc, yc]
     imagePositions = {'L': (0.5*xc-imgW/2, yc-imgH/2), 'R': (1.5*xc-imgW/2, yc-imgH/2)}
     boxPositions = {'L': (0.5*xc-boxW/2, yc-boxH/2), 'R': (1.5*xc-boxW/2, yc-boxH/2)}
+    arrowPositions = {'L': (0.5*xc-30, yc-boxH/2-90), 'R': (1.5*xc-30, yc-boxH/2-90)}
     
     canvas = pygame.display.set_mode((scrWidth, scrHeight), 0, 32)
     canvas.fill((255, 255, 255))
@@ -52,10 +53,10 @@ def loadImages():
         for exp in exps:
             for i in range(1,5):
                 stimDict['{}_{}{}'.format(gdr, exp, i)] = pygame.image.load('{0}stims/filler_images/{1}/{2}/{1}_{2}{3}.png'.format(filePath, gdr, exp, i))
-    miscImages = ['boxB', 'boxTarg', 'mic', 'micRed', 'micBlank', 'bike', 'chimney']
+    miscImages = ['boxB', 'arrow', 'mic', 'micRed', 'micBlank', 'bike', 'chimney']
     #stimDict[miscImages[i]] = [pygame.image.load('{}overspec/stims/{}.png'.format(filePath, miscImages[i])) for i in range(len(miscImages))]
     stimDict['boxB'] = pygame.image.load('{}stims/box_b.png'.format(filePath))
-    stimDict['boxTarg'] = pygame.image.load('{}stims/box_targ.png'.format(filePath))
+    # stimDict['boxTarg'] = pygame.image.load('{}stims/box_targ.png'.format(filePath))
     # stimDict['mic'] = pygame.image.load('{}overspec/stims/mic_black.png'.format(filePath))
     # stimDict['micRed'] = pygame.image.load('{}overspec/stims/mic_red.png'.format(filePath))
     # stimDict['micGrey'] = pygame.image.load('{}overspec/stims/mic_grey.png'.format(filePath))
@@ -65,6 +66,7 @@ def loadImages():
     stimDict['streamBlank'] = pygame.image.load('{}stims/stream_blank.png'.format(filePath))
     stimDict['bike'] = pygame.image.load('{}stims/bike.png'.format(filePath))
     stimDict['chimney'] = pygame.image.load('{}stims/chimney.png'.format(filePath))
+    stimDict['arrow'] = pygame.image.load('{}stims/arrow.png'.format(filePath))
     return stimDict
 
 def loadAudio(audioDir):
@@ -172,7 +174,7 @@ def show_instructions(trialTask):
                 'soundCheckFinish': ['Ok that\'s fine! The experiment will now begin.', yc],
                 'match': ['Listen to your partner\'s description', 0.15*yc],
                 'match2': ['Now click on the picture your partner described', 0.3*yc],
-                'dir': ['Describe the picture highlighted in green to your partner', 0.3*yc],
+                'dir': ['Describe the picture that the arrow is pointing at to your partner', 0.2*yc],
                 'dir2': ['Click on the mic when you finish speaking', 1.7*yc],
                 'dir3': ['Wait while your partner clicks on a picture', 1.7*yc]}
     displayText(instDict[trialTask][0], 24, (xc, instDict[trialTask][1]))
@@ -184,6 +186,10 @@ def show_image(objName, pos):
 
 def show_box(box, boxPos):
     canvas.blit(box, boxPositions[boxPos])
+    pygame.display.update()
+    
+def show_arrow(arrowPos):
+    canvas.blit(stimDict['arrow'], arrowPositions[arrowPos])
     pygame.display.update()
     
 def show_mic(micImage):
@@ -310,7 +316,7 @@ def sound_check_phase():
     clearCanvas()
             
     show_instructions('loadingSuccess') 
-    wait(3000)
+    wait(5000)
     
     clearCanvas()
     
@@ -375,7 +381,7 @@ class Trial:
         show_box(stimDict['boxB'], self.distPos)
         if self.trialType == 'target' or 'Dir' in self.trialType:
             show_instructions('dir')
-            show_box(stimDict['boxTarg'], self.targPos)
+            show_arrow(self.targPos)
             show_mic('stream')
             show_instructions('dir2')
         elif self.trialType == 'prime' or 'Match' in self.trialType:
@@ -455,7 +461,7 @@ def build_experiment(subjNo):
     
     loading_screen()
     
-    sound_check_phase()
+    #sound_check_phase()
 
     for i in range(numTrials):
         trialNo = i+1
